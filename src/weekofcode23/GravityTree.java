@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class GravityTree {
 	static int numberOfNodes;
@@ -11,7 +12,7 @@ public class GravityTree {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		double time1 = System.currentTimeMillis();
-		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/GravityTreeTestData1000a.txt";
+		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/GravityTreeTestDataOwn1b.txt";
 		File file = new File(pathOfTestCaseFile);
 
 		Scanner sc = new Scanner(file);
@@ -25,10 +26,14 @@ public class GravityTree {
 		for (int i = 2; i <= numberOfNodes; i++) {
 			int parentOfNode = sc.nextInt();
 			nodes[i].setParent(parentOfNode);
-			nodes[i].setLevel(nodes[parentOfNode].getLevel() + 1);
+			// nodes[i].setLevel(nodes[parentOfNode].getLevel() + 1);
 			nodes[parentOfNode].childs.add(i);
 		}
+		GravityTree.calcLevels();
 
+		// for(int i=2;i<=numberOfNodes;i++){
+		// System.out.println(nodes[i].getLevel());
+		// }
 		int q = sc.nextInt();
 		for (int i = 1; i <= q; i++) {
 			int v = sc.nextInt();
@@ -38,27 +43,38 @@ public class GravityTree {
 			System.out.println(solution);
 		}
 		double time2 = System.currentTimeMillis();
-		// System.out.println((time2 - time1) / 1000);
 		sc.close();
+
+	}
+
+	private static void calcLevels() {
+		Stack<Integer> stackOfChild = new Stack<>();
+		stackOfChild.add(1);
+		while (!stackOfChild.empty()) {
+			int child = stackOfChild.pop();
+			if (child != 1) {
+				int parent = nodes[child].getParent();
+				nodes[child].setLevel(nodes[parent].getLevel() + 1);
+			}
+			// long distance=nodes[child].getLevel()-levelOfU+distanceVU;
+			// solution+=distance*distance;
+
+			for (Integer childOfChild : nodes[child].getChilds()) {
+				stackOfChild.add(childOfChild);
+			}
+		}
 
 	}
 
 	private static long solve(int v, int u) {
 		long solution = 0;
-		// TODO recursion hier rausnehmen
 		if (!isChild(u, v)) {
-			// System.out.println(u + " ist ein kind von " + v);
-			// alle distancen von v zu seinen kindern berechnen
-			LinkedList<Integer> allChildsAndV = new LinkedList<>();
-			// recursion hier rausnehmen
-			allChilds(u, allChildsAndV);
-			allChildsAndV.add(u);
+
 			long distanceVU = distance(v, u);
-			// System.out.println("distanceVU "+distanceVU);
-			solution = sumOfDistance(allChildsAndV, distanceVU, u);
+			solution = sumOfDistanceForTree(u, 0, distanceVU);
 
 		} else {
-			solution += sumOfDistanceForTree(v, 0);
+			solution += sumOfDistanceForTree(v, 0, 0);
 			solution += sumOfParent(v, 0, u);
 		}
 		// System.out.println();
@@ -79,22 +95,28 @@ public class GravityTree {
 		}
 		for (Integer child : nodes[(int) parent].getChilds()) {
 			if (child != v) {
-				solution += (depth + 2) * (depth + 2);
-				solution += sumOfDistanceForTree(child, depth + 2);
+				//solution += (depth + 2) * (depth + 2);
+				solution += sumOfDistanceForTree(child, 0, depth+2);
 			}
 		}
 
 		return solution;
 	}
 
-	private static long sumOfDistanceForTree(int u, int depth) {
+	private static long sumOfDistanceForTree(int u, int depth, long distanceVU) {
 		long solution = 0;
-		for (Integer child : nodes[u].getChilds()) {
-			solution += (depth + 1) * (depth + 1);
-			solution += sumOfDistanceForTree(child, depth + 1);
+		int levelOfU = nodes[u].getLevel();
+		Stack<Integer> stackOfChild = new Stack<>();
+		stackOfChild.add(u);
+		while (!stackOfChild.empty()) {
+			int child = stackOfChild.pop();
+			long distance = nodes[child].getLevel() - levelOfU + distanceVU;
+			solution += distance * distance;
 
+			for (Integer childOfChild : nodes[child].getChilds()) {
+				stackOfChild.add(childOfChild);
+			}
 		}
-
 		return solution;
 	}
 
@@ -146,12 +168,11 @@ public class GravityTree {
 
 	// kontrolle, ob u child von v ist
 	static boolean isChild(int v, int u) {
-		if(nodes[u].getLevel()<=nodes[v].getLevel()){
+		if (nodes[u].getLevel() <= nodes[v].getLevel()) {
 			return false;
 		}
 		int levelV = nodes[v].getLevel();
-		
-		
+
 		while (nodes[u].getLevel() != levelV) {
 			u = nodes[u].getParent();
 		}
