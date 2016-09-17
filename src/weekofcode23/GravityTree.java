@@ -1,21 +1,30 @@
 package weekofcode23;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Stack;
 
+import javax.print.attribute.HashAttributeSet;
+
 public class GravityTree {
 	static int numberOfNodes;
 	static Node[] nodes;
+	static HashMap<Integer, Long> solutionForSubTree = new HashMap<>();
+	static double timeSum = 0;
 
 	public static void main(String[] args) throws FileNotFoundException {
 		double time1 = System.currentTimeMillis();
-		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/GravityTreeTestDataOwn1b.txt";
+		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/GravityTreeTestData500000b.txt";
 		File file = new File(pathOfTestCaseFile);
-
-		Scanner sc = new Scanner(file);
+		InputStream is = new FileInputStream(file);
+		FasterScanner sc = new FasterScanner(is);
 		numberOfNodes = sc.nextInt();
 		// leave 0 entry empty
 		nodes = new Node[numberOfNodes + 1];
@@ -26,24 +35,28 @@ public class GravityTree {
 		for (int i = 2; i <= numberOfNodes; i++) {
 			int parentOfNode = sc.nextInt();
 			nodes[i].setParent(parentOfNode);
-			// nodes[i].setLevel(nodes[parentOfNode].getLevel() + 1);
 			nodes[parentOfNode].childs.add(i);
 		}
 		GravityTree.calcLevels();
 
-		// for(int i=2;i<=numberOfNodes;i++){
-		// System.out.println(nodes[i].getLevel());
-		// }
 		int q = sc.nextInt();
+		StringBuffer solBuf=new StringBuffer();
 		for (int i = 1; i <= q; i++) {
 			int v = sc.nextInt();
 			int u = sc.nextInt();
-			long solution = solve(v, u);
-
-			System.out.println(solution);
+			double time11 = System.currentTimeMillis();
+			 long solution = solve(v, u);
+			 solBuf.append(solution);
+			 solBuf.append("\n");
+			double time22 = System.currentTimeMillis();
+			timeSum += (time22 - time11);
+			//System.out.println(solution);
 		}
+		System.out.println(solBuf);
 		double time2 = System.currentTimeMillis();
-		sc.close();
+		//System.out.println((time2 - time1) / 1000);
+		// System.out.println(timeSum/1000);
+		// sc.close();
 
 	}
 
@@ -56,8 +69,6 @@ public class GravityTree {
 				int parent = nodes[child].getParent();
 				nodes[child].setLevel(nodes[parent].getLevel() + 1);
 			}
-			// long distance=nodes[child].getLevel()-levelOfU+distanceVU;
-			// solution+=distance*distance;
 
 			for (Integer childOfChild : nodes[child].getChilds()) {
 				stackOfChild.add(childOfChild);
@@ -71,11 +82,14 @@ public class GravityTree {
 		if (!isChild(u, v)) {
 
 			long distanceVU = distance(v, u);
-			solution = sumOfDistanceForTree(u, 0, distanceVU);
+			solution = sumOfDistanceForTree(u, distanceVU);
 
 		} else {
-			solution += sumOfDistanceForTree(v, 0, 0);
+			double time11 = System.currentTimeMillis();
+			solution += sumOfDistanceForTree(v, 0);
 			solution += sumOfParent(v, 0, u);
+			double time22 = System.currentTimeMillis();
+			// timeSum+=(time22-time11);
 		}
 		// System.out.println();
 		return solution;
@@ -95,15 +109,16 @@ public class GravityTree {
 		}
 		for (Integer child : nodes[(int) parent].getChilds()) {
 			if (child != v) {
-				//solution += (depth + 2) * (depth + 2);
-				solution += sumOfDistanceForTree(child, 0, depth+2);
+				// solution += (depth + 2) * (depth + 2);
+				solution += sumOfDistanceForTree(child, depth + 2);
 			}
 		}
 
 		return solution;
 	}
 
-	private static long sumOfDistanceForTree(int u, int depth, long distanceVU) {
+	private static long sumOfDistanceForTree(int u, long distanceVU) {
+
 		long solution = 0;
 		int levelOfU = nodes[u].getLevel();
 		Stack<Integer> stackOfChild = new Stack<>();
@@ -117,20 +132,7 @@ public class GravityTree {
 				stackOfChild.add(childOfChild);
 			}
 		}
-		return solution;
-	}
 
-	private static long sumOfDistance(LinkedList<Integer> allChildsAndV, long distanceVU, int u) {
-
-		long solution = 0;
-		// System.out.println("Diese Kinder sind interessant");
-		for (Integer child : allChildsAndV) {
-			// System.out.println(child);
-			long qDist = (nodes[child].getLevel() - nodes[u].getLevel() + distanceVU);
-			// System.out.println(qDist);
-			qDist = qDist * qDist;
-			solution += qDist;
-		}
 		return solution;
 	}
 
@@ -154,7 +156,6 @@ public class GravityTree {
 			u = nodes[u].getParent();
 
 		}
-
 		return distance;
 	}
 
@@ -210,6 +211,110 @@ public class GravityTree {
 
 		public void setLevel(int level) {
 			this.level = level;
+		}
+
+	}
+
+	public static class FasterScanner {
+		private InputStream mIs;
+		private byte[] buf = new byte[1024];
+		private int curChar;
+		private int numChars;
+
+		public FasterScanner() {
+			this(System.in);
+		}
+
+		public FasterScanner(InputStream is) {
+			mIs = is;
+		}
+
+		public int read() {
+			if (numChars == -1)
+				throw new InputMismatchException();
+			if (curChar >= numChars) {
+				curChar = 0;
+				try {
+					numChars = mIs.read(buf);
+				} catch (IOException e) {
+					throw new InputMismatchException();
+				}
+				if (numChars <= 0)
+					return -1;
+			}
+			return buf[curChar++];
+		}
+
+		public String nextLine() {
+			int c = read();
+			while (isSpaceChar(c))
+				c = read();
+			StringBuilder res = new StringBuilder();
+			do {
+				res.appendCodePoint(c);
+				c = read();
+			} while (!isEndOfLine(c));
+			return res.toString();
+		}
+
+		public String nextString() {
+			int c = read();
+			while (isSpaceChar(c))
+				c = read();
+			StringBuilder res = new StringBuilder();
+			do {
+				res.appendCodePoint(c);
+				c = read();
+			} while (!isSpaceChar(c));
+			return res.toString();
+		}
+
+		public long nextLong() {
+			int c = read();
+			while (isSpaceChar(c))
+				c = read();
+			int sgn = 1;
+			if (c == '-') {
+				sgn = -1;
+				c = read();
+			}
+			long res = 0;
+			do {
+				if (c < '0' || c > '9')
+					throw new InputMismatchException();
+				res *= 10;
+				res += c - '0';
+				c = read();
+			} while (!isSpaceChar(c));
+			return res * sgn;
+		}
+
+		public int nextInt() {
+			int c = read();
+			while (isSpaceChar(c))
+				c = read();
+			int sgn = 1;
+			if (c == '-') {
+				sgn = -1;
+				c = read();
+			}
+			int res = 0;
+			do {
+				if (c < '0' || c > '9')
+					throw new InputMismatchException();
+				res *= 10;
+				res += c - '0';
+				c = read();
+			} while (!isSpaceChar(c));
+			return res * sgn;
+		}
+
+		public boolean isSpaceChar(int c) {
+			return c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == -1;
+		}
+
+		public boolean isEndOfLine(int c) {
+			return c == '\n' || c == '\r' || c == -1;
 		}
 
 	}

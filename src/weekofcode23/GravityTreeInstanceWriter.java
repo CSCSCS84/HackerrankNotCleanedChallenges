@@ -8,14 +8,14 @@ import java.io.Writer;
 import java.util.Arrays;
 
 public class GravityTreeInstanceWriter {
-	static int numberOfNodes = 500000;
-	static int q = 500000;
+	static int numberOfNodes = 100;
+	static int q = 100;
 
 	public static void main(String[] args) {
 		Writer writer = null;
 
 		try {
-			String filename = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/NeueInstanzen/GravityTreeTestData500000a2.txt";
+			String filename = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/GravityTree/NeueInstanzen/GravityTreeTestData100b.txt";
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
 			String input = "";
 			input = "" + numberOfNodes;
@@ -67,11 +67,11 @@ public class GravityTreeInstanceWriter {
 			if (b == 0) {
 				b = 1;
 			}
-			if (a < b) {
+			if (a > b) {
 				str.append( a + " " + b);
 				str.append( "\n");
 
-			} else if (b < a) {
+			} else if (b > a) {
 				str.append( b + " " + a);
 				str.append( "\n");
 			}
