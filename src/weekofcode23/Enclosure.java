@@ -2,17 +2,22 @@ package weekofcode23;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Scanner;
 
 public class Enclosure {
 	static long numberOfPoints;
 	static long[] lengthOfSides = null;
-	static double epsilonForR = 0.001;
-	static double epsilonForStartR = 0.01;
+	static MathContext mc = new MathContext(10);
+	static BigDecimal epsilonForR = new BigDecimal(0.01, mc);
+	static BigDecimal epsilonForStartR = new BigDecimal(0.1, mc);
 	static long maxR = 0;
+	static int precision = 10;
 
 	public static void main(String[] args) throws FileNotFoundException {
-		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/Enclosure/EnclosureTestDataOwn10.txt";
+		String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/Enclosure/EnclosureTestData00.txt";
 		File file = new File(pathOfTestCaseFile);
 
 		Scanner sc = new Scanner(file);
@@ -31,8 +36,8 @@ public class Enclosure {
 
 	private static StringBuffer solve() {
 		StringBuffer solution = new StringBuffer();
-		double radius = Enclosure.findRUsingNewton();
-	//	System.out.println("radius " + radius);
+		BigDecimal radius = Enclosure.findRUsingNewton();
+		// System.out.println("radius " + radius);
 		// radius=1.11803;
 		// calculate the points
 		double winkelSum = 0;
@@ -47,100 +52,116 @@ public class Enclosure {
 		solution.append("\n");
 		solution.append("\n");
 
-		double mitteX = radius * radius - lengthOfSides[0] / 2.0 * lengthOfSides[0] / 2.0;
-		mitteX = Math.sqrt(mitteX);
-		double mitteY = lengthOfSides[0] / 2.0;
-		winkelSum = 3 / 2.0 * Math.PI;
-		winkelSum += Math.asin(lengthOfSides[0] / (2 * radius));
-		//System.out.println(winkelSum);
-		for (int i = 1; i < numberOfPoints; i++) {
-			// System.out.println(radius);
-			double winkel = 2 * Math.asin(lengthOfSides[i] / (2 * radius));
-
-			winkelSum += winkel;
-			if (winkelSum >= 2 * Math.PI) {
-				winkelSum -= 2 * Math.PI;
-			}
-		//	System.out.println("winkelsum " + winkelSum);
-			double x = mitteX + radius * Math.sin(winkelSum);
-			double y = mitteY + radius * Math.cos(winkelSum);
-			if (i - 1 != numberOfPoints) {
-				solution.append(x);
-				solution.append("\n");
-				solution.append(y);
-				solution.append('\n');
-				solution.append('\n');
-			}
-		}
+		// double mitteX = radius * radius - lengthOfSides[0] / 2.0 *
+		// lengthOfSides[0] / 2.0;
+		// mitteX = Math.sqrt(mitteX);
+		// double mitteY = lengthOfSides[0] / 2.0;
+		// winkelSum = 3 / 2.0 * Math.PI;
+		// winkelSum += Math.asin(lengthOfSides[0] / (2 * radius));
+		// // System.out.println(winkelSum);
+		// for (int i = 1; i < numberOfPoints; i++) {
+		// // System.out.println(radius);
+		// double winkel = 2 * Math.asin(lengthOfSides[i] / (2 * radius));
+		//
+		// winkelSum += winkel;
+		// if (winkelSum >= 2 * Math.PI) {
+		// winkelSum -= 2 * Math.PI;
+		// }
+		// // System.out.println("winkelsum " + winkelSum);
+		// double x = mitteX + radius * Math.sin(winkelSum);
+		// double y = mitteY + radius * Math.cos(winkelSum);
+		// if (i - 1 != numberOfPoints) {
+		// solution.append(x);
+		// solution.append("\n");
+		// solution.append(y);
+		// solution.append('\n');
+		// solution.append('\n');
+		// }
+		// }
 
 		return solution;
 	}
 
-	private static double calcStartR() {
-		double startR = 0;
-		double sumR = 0;
+	private static BigDecimal calcStartR() {
+		BigDecimal startR = new BigDecimal(0, mc);
+		BigDecimal sumR = new BigDecimal(0, mc);
 		for (int i = 0; i < numberOfPoints; i++) {
-			sumR += lengthOfSides[i];
+			sumR = sumR.add(new BigDecimal(lengthOfSides[i], mc));
 		}
-		startR = sumR / (2 * Math.PI);
+		double d = Math.PI * 2;
+		System.out.println(sumR.toPlainString());
+		startR = sumR.divide(new BigDecimal(d, mc), precision, RoundingMode.HALF_UP);
 		// ist das richtig?
-
-		while (calcSum(startR) > epsilonForStartR) {
-			startR += 0.00001;
+		System.out.println(startR.toPlainString());
+		while (calcSum(startR).compareTo(epsilonForStartR) == 1) {
+			startR = startR.add(new BigDecimal(0.00001, mc));
 
 		}
-	//	System.out.println("StartR " + startR);
 		return startR;
 	}
 
-	private static double findRUsingNewton() {
-		double sol = 0;
-		double rn = calcStartR();
-		//System.out.println("start r: " + rn);
-		// double rn = 1.05;
-		double rnplus1 = rn;
-		double sumToCheckRNPLUS1;
+	private static BigDecimal findRUsingNewton() {
+		BigDecimal rn = calcStartR();
+		System.out.println(rn.toPlainString());
+		BigDecimal rnplus1 = rn;
+		BigDecimal sumToCheckRNPLUS1;
 		do {
-			double dummy = rnplus1;
-			rnplus1 = rn + zahlerFuerNewton(rn) / nennerFuerNewton(rn);
+			System.out.println(rnplus1.toPlainString());
+			BigDecimal dummy = rnplus1.add(new BigDecimal(0));
+			rnplus1 = rn.add(new BigDecimal(0), mc);
+		rnplus1=	rnplus1.add(zahlerFuerNewton(rn).divide(nennerFuerNewton(rn), precision, RoundingMode.HALF_UP));
+			// rnplus1 = rn + zahlerFuerNewton(rn) / nennerFuerNewton(rn);
 			rn = dummy;
-			
-			sumToCheckRNPLUS1 = calcSum(rnplus1);
 
-		} while (sumToCheckRNPLUS1 > epsilonForR);
+			sumToCheckRNPLUS1 = calcSum(rnplus1);
+			System.out.println(sumToCheckRNPLUS1.toPlainString());
+
+		} while (sumToCheckRNPLUS1.compareTo(epsilonForR) == 1);
 		return rnplus1;
 	}
 
-	private static double calcSum(double rnplus1) {
-		double sum = 0;
+	private static BigDecimal calcSum(BigDecimal rnplus1) {
+		BigDecimal sum = new BigDecimal(0, mc);
 		for (int i = 0; i < numberOfPoints; i++) {
-			double dummy = lengthOfSides[i] / (2.0 * rnplus1);
-			if (Math.abs(dummy) > 1) {
-				return 1;
+			BigDecimal dummy = new BigDecimal(lengthOfSides[i], mc);
+			dummy = dummy.divide(new BigDecimal(2.0), mc);
+			dummy = dummy.divide(rnplus1, precision, RoundingMode.HALF_UP);
+			// BigDecimal dummy = new BigDecimal( lengthOfSides[i] / (2.0 *
+			// rnplus1),mc);
+			if (dummy.compareTo(new BigDecimal(1, mc)) == 1) {
+				return new BigDecimal(1, mc);
 			}
-			sum += Math.asin(dummy);
+			double asin = Math.asin(dummy.doubleValue());
+			sum = sum.add(new BigDecimal(asin, mc));
 		}
-		sum -= Math.PI;
-		sum = Math.abs(sum);
+		sum = sum.subtract(new BigDecimal(Math.PI, mc));
+		sum = sum.abs();
+
 		return sum;
 	}
 
-	private static double zahlerFuerNewton(double rn) {
-		double zaehler = 0;
+	private static BigDecimal zahlerFuerNewton(BigDecimal rn) {
+		BigDecimal zaehler = new BigDecimal(0, mc);
 		for (int i = 0; i < numberOfPoints; i++) {
-			zaehler = zaehler += Math.asin(lengthOfSides[i] / (2 * rn));
+			double dummy = Math.asin(lengthOfSides[i] / (2 * rn.doubleValue()));
+			zaehler = zaehler.add(new BigDecimal(dummy, mc));
 		}
-		zaehler -= Math.PI;
+		zaehler = zaehler.subtract(new BigDecimal(Math.PI, mc));
 		return zaehler;
 	}
 
-	private static double nennerFuerNewton(double rn) {
-		double nenner = 0;
+	private static BigDecimal nennerFuerNewton(BigDecimal rn) {
+		BigDecimal nenner = new BigDecimal(0, mc);
 
 		for (int i = 0; i < numberOfPoints; i++) {
-			double nennerOfNenner = 2 * rn * Math.sqrt(4 * rn * rn - lengthOfSides[i] * lengthOfSides[i]);
+			double dummy = 2 * rn.doubleValue()
+					* Math.sqrt(4 * rn.doubleValue() * rn.doubleValue() - lengthOfSides[i] * lengthOfSides[i]);
+			BigDecimal nennerOfNenner = new BigDecimal(dummy, mc);
+
 			// System.out.println("nenner "+nenner);
-			nenner += lengthOfSides[i] / nennerOfNenner;
+			BigDecimal toAdd = new BigDecimal(lengthOfSides[i], mc);
+			toAdd = toAdd.divide(nennerOfNenner, 10, RoundingMode.HALF_UP);
+			nenner = nenner.add(toAdd);
 		}
 		return nenner;
 
