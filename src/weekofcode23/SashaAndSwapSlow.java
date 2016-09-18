@@ -20,10 +20,10 @@ public class SashaAndSwapSlow {
 	static long solutionFast[][];
 
 	public static void main(String[] args) throws FileNotFoundException {
-		int numberOfInstances = 20;
+		int numberOfInstances = 100;
 		solutionMemory = new long[numberOfInstances][numberOfInstances];
 		double time1 = System.currentTimeMillis();
-		for (int t = 3; t <= numberOfInstances; t++) {
+		for (int t = 100; t <= numberOfInstances; t++) {
 			String pathOfTestCaseFile = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/SashaAndSwap/SashaAndSwapTestDataOwn"
 					+ t + ".txt";
 			File file = new File(pathOfTestCaseFile);
@@ -34,14 +34,14 @@ public class SashaAndSwapSlow {
 			for (int i = 0; i < n; i++) {
 				numbers[i] = sc.nextInt();
 			}
-			System.out.print(t + " : ");
+			// System.out.print(t + " : ");
 			// SashaAndSwapSlow.solve();
 			SashaAndSwapSlow.solveForIFast();
 			System.out.println();
 		}
 		double time2 = System.currentTimeMillis();
-		System.out.println((time2 - time1) / 1000);
-		System.out.println(timeSum / 1000);
+		// System.out.println((time2 - time1) / 1000);
+		// System.out.println(timeSum / 1000);
 
 	}
 
@@ -63,20 +63,20 @@ public class SashaAndSwapSlow {
 		solutionFast = new long[n + 1][n + 1];
 		long sum = 0;
 		for (int i = 2; i <= n; i++) {
-			sum += (i - 1);
+			sum = (sum + (i - 1)) % modulo;
 			solutionFast[i][1] = sum;
 		}
-	
+
 		// System.out.println(" n "+n);
 		for (int i = 3; i <= n; i++) {
 			for (int t = 2; t <= n; t++) {
 				// System.out.println(i + " "+t);
-				
+
 				if (i == t + 1) {
-					long a=solutionFast[i-1][t-1];
-					solutionFast[i][t]=solutionFast[i-1][t-1]*(i);
+					solutionFast[i][t] = (solutionFast[i - 1][t - 1] * (i)) % modulo;
 				} else {
-					solutionFast[i][t] = solutionFast[i - 1][t] + (i - 1) * solutionFast[i - 1][t - 1];
+					solutionFast[i][t] = (solutionFast[i - 1][t] + ((i - 1) * solutionFast[i - 1][t - 1]) % modulo)
+							% modulo;
 				}
 			}
 		}

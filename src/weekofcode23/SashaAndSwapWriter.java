@@ -8,12 +8,12 @@ import java.io.Writer;
 import java.util.Arrays;
 
 public class SashaAndSwapWriter {
-	static int numberOfNodes = 9;
+	static int numberOfNodes = 20000;
 	static int q = 100;
 
 	public static void main(String[] args) {
 		Writer writer = null;
-		for (int  j= 9; j <= 20; j++) {
+		for (int  j= 20000; j <= 20000; j++) {
 			try {
 
 				String filename = "/home/christoph/Development2/HackerrankNotCleanedChallenges/TestData/SashaAndSwap/NeueInstanzen/SashaAndSwapTestDataOwn"
